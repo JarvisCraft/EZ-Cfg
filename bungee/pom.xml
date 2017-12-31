@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>ez-cfg</artifactId>
-        <groupId>ru.progrm-jarvis.minecraft.spigot</groupId>
+        <groupId>ru.progrm-jarvis.minecraft</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
