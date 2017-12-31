@@ -15,8 +15,8 @@ import java.util.*;
 public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin> {
     P getPlugin();
 
-    void setYamlFile(YamlConfiguration yamlFile);
-    YamlConfiguration getYamlFile();
+    void setConfiguration(YamlConfiguration yamlFile);
+    YamlConfiguration getConfiguration();
 
     default T load(final File file) throws IOException, InvalidConfigurationException {
         if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
@@ -88,7 +88,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
         if (updated) configuration.save(file);
 
-        setYamlFile(configuration);
+        setConfiguration(configuration);
 
         return (T) this;
     }
