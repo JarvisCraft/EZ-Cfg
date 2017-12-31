@@ -41,8 +41,7 @@ Due to this library using custom repositories it cannot be deployed to Maven Cen
   ...
   <dependency>
     <groupId>com.github.JarvisCraft</groupId>
-    <!-- ez-cfg-spigot or ez-cfg-bungee depending on platform for which you require this library -->
-    <artifactId>ez-cfg</artifactId>
+    <artifactId>ez-cfg-spigot<!-- or ez-cfg-bungee --></artifactId>
     <version>-SNAPSHOT</version>
   </dependency>
   ...
