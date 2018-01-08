@@ -11,6 +11,11 @@
 
     <artifactId>ez-cfg-bungee</artifactId>
 
+    <repository>
+        <id>sonatype-oss-repo</id>
+        <url>https://oss.sonatype.org/content/groups/public/</url>
+    </repository>
+
     <dependencies>
         <dependency>
             <groupId>net.md-5</groupId>
