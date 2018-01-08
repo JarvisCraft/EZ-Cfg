@@ -24,23 +24,27 @@ public @interface CfgField {
     /**
      * The path by which the setting should be stored in file.
      * Is be used in {@link FileConfiguration#get(String)}-like methods.
+     *
      * @return the key by which to store the value
      */
     String value() default "";
 
     /**
      * Type of the stored value. By default it's automatically taken from the variable to store data in.
+     *
      * @return the type of the value
      */
     Type type() default Type.AUTO;
 
     /**
      * The comment to be added before the field to explain it's meaning.
+     *
      * @return the comment before the field
      */
     String[] comment() default {};
 
-    @SuppressWarnings("unused") // Because enums can be taken automatically
+    @SuppressWarnings("unused")
+            // Because enums can be taken automatically
     enum Type {
         AUTO(null),
         // Base types
@@ -115,16 +119,18 @@ public @interface CfgField {
                 for (Type type : values()) {
                     if (!type.isList()) continue;
 
-                    for (Class<?> typeClass : type.typeClasses) if (typeClass
-                            .isAssignableFrom(listTypeClass)) return type;
+                    for (Class<?> typeClass : type.typeClasses)
+                        if (typeClass
+                                .isAssignableFrom(listTypeClass)) return type;
                 }
             } else {
                 // If is not list
                 for (Type type : values()) {
                     if (type.isList()) continue;
 
-                    for (Class<?> typeClass : type.typeClasses) if (typeClass
-                            .isAssignableFrom(field.getType())) return type;
+                    for (Class<?> typeClass : type.typeClasses)
+                        if (typeClass
+                                .isAssignableFrom(field.getType())) return type;
                 }
             }
 
@@ -133,6 +139,7 @@ public @interface CfgField {
 
         /**
          * Abstract Wrapper for all dataType required to work with various config data types.
+         *
          * @param <T> data type
          */
         @SuppressWarnings("unused")
@@ -226,7 +233,7 @@ public @interface CfgField {
 
             @Override
             public Integer get(final FileConfiguration configuration, final String path, final Integer def) {
-                val value= configuration.get(path);
+                val value = configuration.get(path);
                 if (value instanceof Number) return toInt(value);
                 else return def;
             }

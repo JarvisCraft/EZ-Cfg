@@ -40,7 +40,7 @@ Due to this library using custom repositories it cannot be deployed to Maven Cen
 <dependencies>
   ...
   <dependency>
-    <groupId>com.github.JarvisCraft</groupId>
+    <groupId>com.github.JarvisCraft.EZ-Cfg</groupId>
     <artifactId>ez-cfg-spigot<!-- or ez-cfg-bungee --></artifactId>
     <version>-SNAPSHOT</version>
   </dependency>

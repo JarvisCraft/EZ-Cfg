@@ -16,6 +16,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
     P getPlugin();
 
     void setConfiguration(YamlConfiguration yamlFile);
+
     YamlConfiguration getConfiguration();
 
     default T load(final File file) throws IOException, InvalidConfigurationException {
@@ -37,14 +38,15 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     @SuppressWarnings({"unchecked", "Duplicates"})
     default T loadData(final File file) throws IOException, InvalidConfigurationException {
-        YamlConfiguration configuration = new YamlConfiguration(){{
+        YamlConfiguration configuration = new YamlConfiguration() {{
             load(file);
         }};
 
         val fieldsDeclared = new ArrayList<Field>(Arrays.asList(this.getClass().getDeclaredFields()));
         val fields = new HashMap<Field, CfgField>();
-        for (Field field : fieldsDeclared) if (field.isAnnotationPresent(CfgField.class)) fields
-                .put(field, field.getAnnotation(CfgField.class));
+        for (Field field : fieldsDeclared)
+            if (field.isAnnotationPresent(CfgField.class)) fields
+                    .put(field, field.getAnnotation(CfgField.class));
 
         var updated = false;
         for (Map.Entry<Field, CfgField> field : fields.entrySet()) {
