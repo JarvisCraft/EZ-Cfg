@@ -19,6 +19,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
     P getPlugin();
 
     void setConfiguration(Configuration configuration);
+
     Configuration getConfiguration();
 
     default T load(final File file) throws IOException {
@@ -44,11 +45,12 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
         val fieldsDeclared = new ArrayList<Field>(Arrays.asList(this.getClass().getDeclaredFields()));
         val fields = new HashMap<Field, CfgField>();
-        for (val field : fieldsDeclared) if (field.isAnnotationPresent(CfgField.class)) fields
-                .put(field, field.getAnnotation(CfgField.class));
+        for (Field field : fieldsDeclared)
+            if (field.isAnnotationPresent(CfgField.class)) fields
+                    .put(field, field.getAnnotation(CfgField.class));
 
         var updated = false;
-        for (val field : fields.entrySet()) {
+        for (Map.Entry<Field, CfgField> field : fields.entrySet()) {
             CfgField.Type type = null;
 
             if (field.getValue().type() == CfgField.Type.AUTO) type = CfgField.Type.getType(field.getKey());
