@@ -103,19 +103,19 @@ public @interface CfgField {
                 val listTypeClass = (Class<?>) ((ParameterizedType) field.getGenericType())
                         .getActualTypeArguments()[0];
 
-                for (Type type : values()) {
+                for (val type : values()) {
                     if (!type.isList()) continue;
 
-                    for (Class<?> typeClass : type.typeClasses)
+                    for (val typeClass : type.typeClasses)
                         if (typeClass
                                 .isAssignableFrom(listTypeClass)) return type;
                 }
             } else {
                 // If is not list
-                for (Type type : values()) {
+                for (val type : values()) {
                     if (type.isList()) continue;
 
-                    for (Class<?> typeClass : type.typeClasses)
+                    for (val typeClass : type.typeClasses)
                         if (typeClass
                                 .isAssignableFrom(field.getType())) return type;
                 }
