@@ -6,6 +6,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,6 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -109,21 +111,22 @@ public @interface CfgField {
 
             if (isList) {
                 // If is list
-                val listTypeClass = (Class<?>) ((ParameterizedType) field.getGenericType())
-                        .getActualTypeArguments()[0];
+                val typeArgument = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
 
-                for (Type type : values()) {
+                if (typeArgument instanceof ParameterizedTypeImpl) if (Map.class
+                        .isAssignableFrom(((ParameterizedTypeImpl) typeArgument).getRawType())) return MAP_LIST;
+                else for (val type : values()) {
                     if (!type.isList()) continue;
 
-                    for (Class<?> typeClass : type.typeClasses) if (typeClass
-                            .isAssignableFrom(listTypeClass)) return type;
+                    for (val typeClass : type.typeClasses) if (typeClass
+                            .isAssignableFrom((Class<?>) typeArgument)) return type;
                 }
             } else {
                 // If is not list
-                for (Type type : values()) {
+                for (val type : values()) {
                     if (type.isList()) continue;
 
-                    for (Class<?> typeClass : type.typeClasses) if (typeClass
+                    for (val typeClass : type.typeClasses) if (typeClass
                             .isAssignableFrom(field.getType())) return type;
                 }
             }

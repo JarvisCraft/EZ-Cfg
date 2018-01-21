@@ -43,11 +43,11 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
         val fieldsDeclared = new ArrayList<Field>(Arrays.asList(this.getClass().getDeclaredFields()));
         val fields = new HashMap<Field, CfgField>();
-        for (Field field : fieldsDeclared) if (field.isAnnotationPresent(CfgField.class)) fields
+        for (val field : fieldsDeclared) if (field.isAnnotationPresent(CfgField.class)) fields
                 .put(field, field.getAnnotation(CfgField.class));
 
         var updated = false;
-        for (Map.Entry<Field, CfgField> field : fields.entrySet()) {
+        for (val field : fields.entrySet()) {
             CfgField.Type type = null;
 
             if (field.getValue().type() == CfgField.Type.AUTO) type = CfgField.Type.getType(field.getKey());
