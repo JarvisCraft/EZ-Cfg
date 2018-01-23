@@ -8,7 +8,7 @@ public class MySetting implements YamlConfigData<MySetting, MyPlugin> {
     // Required
     @NonNull @Setter(AccessLevel.NONE) private final MyPlugin plugin;
     // Required
-    private YamlConfiguration yamlFile;
+    private YamlConfiguration configuration;
 
     @CfgField private String myString = "foo";
     @CfgField("IsSomeOptionEnabled") private boolean optionEnabled = true;
