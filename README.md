@@ -21,8 +21,8 @@ public class MySetting implements YamlConfigData<MySetting, MyPlugin> {
 Then load the values using
 ```Java
 MySetting setting = new MySetting().load();
-MySetting setting = new MySetting().load(new File("path/to/File.yml));
-MySetting setting = new MySetting().load("path/to/File.yml);
+MySetting setting = new MySetting().load(new File("path/to/File.yml"));
+MySetting setting = new MySetting().load("path/to/File.yml");
 ```
 ## Maven:
 Due to this library using custom repositories it cannot be deployed to Maven Central so in order to use it you can use JitPack's repo:
