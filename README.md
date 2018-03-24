@@ -6,7 +6,7 @@ The following example gives an example of usage (uses Lombok)
 @Data
 public class MySetting implements YamlConfigData<MySetting, MyPlugin> {
     // Required
-    @NonNull @Setter(AccessLevel.NONE) private final MyPlugin plugin;
+    @NonNull private final MyPlugin plugin;
     // Required
     private YamlConfiguration configuration;
 

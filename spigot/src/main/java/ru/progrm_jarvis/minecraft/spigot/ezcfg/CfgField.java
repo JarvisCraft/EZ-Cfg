@@ -116,13 +116,13 @@ public @interface CfgField {
                 // If is list
                 val typeArgument = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
 
-                if (typeArgument instanceof ParameterizedTypeImpl) if (Map.class
-                        .isAssignableFrom(((ParameterizedTypeImpl) typeArgument).getRawType())) return MAP_LIST;
-                else for (val type : values()) {
+                for (val type : values()) {
                     if (!type.isList()) continue;
 
-                    for (val typeClass : type.typeClasses) if (typeClass
+                    if (typeArgument instanceof Class) for (val typeClass : type.typeClasses) if (typeClass
                             .isAssignableFrom((Class<?>) typeArgument)) return type;
+
+                    return LIST;
                 }
             } else {
                 // If is not list
