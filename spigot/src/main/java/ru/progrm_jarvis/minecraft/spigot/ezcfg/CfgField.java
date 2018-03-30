@@ -1,12 +1,12 @@
 package ru.progrm_jarvis.minecraft.spigot.ezcfg;
 
+import lombok.NonNull;
 import lombok.val;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -74,7 +74,8 @@ public @interface CfgField {
         VECTOR(new ConfigDataVector(), Vector.class),
         OFFLINE_PLAYER(new ConfigDataOfflinePlayer(), OfflinePlayer.class),
         ITEM_STACK(new ConfigDataItemStack(), ItemStack.class),
-        COLOR(new ConfigDataColor(), Color.class);
+        COLOR(new ConfigDataColor(), Color.class),
+        OBJECT(new ConfigDataObject());
 
         /**
          * Method to get the value of the field
@@ -108,7 +109,7 @@ public @interface CfgField {
         }
 
         @SuppressWarnings("Duplicates")
-        public static Type getType(final Field field) {
+        @NonNull public static Type getType(final Field field) {
 
             val isList = List.class.isAssignableFrom(field.getType());
 
@@ -133,7 +134,7 @@ public @interface CfgField {
                 }
             }
 
-            return null;
+            return OBJECT;
         }
 
         /**
@@ -552,7 +553,7 @@ public @interface CfgField {
             }
         }
 
-        private static class ConfigDataOther extends ConfigData {
+        private static class ConfigDataObject extends ConfigData {
             @Override
             public Object get(final FileConfiguration configuration, final String path) {
                 return configuration.get(path);

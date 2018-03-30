@@ -55,9 +55,6 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
             if (field.getValue().type() == CfgField.Type.AUTO) type = CfgField.Type.getType(field.getKey());
 
-            // return if unknown type of CfgField
-            if (type == null) continue;
-
             val accessible = field.getKey().isAccessible();
             field.getKey().setAccessible(true);
 

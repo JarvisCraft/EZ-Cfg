@@ -60,7 +60,8 @@ public @interface CfgField {
         FLOAT_LIST(new ConfigDataListFloat(), true, float.class, Float.class),
         DOUBLE_LIST(new ConfigDataListDouble(), true, double.class, Double.class),
         CHAR_LIST(new ConfigDataListChar(), true, char.class, Character.class),
-        STRING_LIST(new ConfigDataListString(), true, String.class);
+        STRING_LIST(new ConfigDataListString(), true, String.class),
+        OBJECT(new ConfigDataObject());
 
         /**
          * Method to get the value of the field
@@ -119,7 +120,7 @@ public @interface CfgField {
                 }
             }
 
-            return null;
+            return OBJECT;
         }
 
         /**
@@ -395,6 +396,13 @@ public @interface CfgField {
             @Override
             public List<String> get(Configuration configuration, String path, List<String> def) {
                 return configuration.getList(path) == null ? def : configuration.getStringList(path);
+            }
+        }
+
+        private static class ConfigDataObject extends ConfigData {
+            @Override
+            public Object get(final Configuration configuration, final String path) {
+                return configuration.get(path);
             }
         }
     }
