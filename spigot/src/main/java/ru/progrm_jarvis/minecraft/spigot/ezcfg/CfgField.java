@@ -44,8 +44,6 @@ public @interface CfgField {
      */
     String[] comment() default {};
 
-    @SuppressWarnings("unused")
-            // Because enums can be taken automatically
     enum Type {
         AUTO(null),
         // Base types
