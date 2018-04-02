@@ -11,12 +11,12 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "Duplicates"})
 public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin> {
     P getPlugin();
 
-    @SuppressWarnings({"unchecked", "Duplicates"})
-    default T loadDataAndSave(final File file) throws IOException, InvalidConfigurationException {
+    @SuppressWarnings("unchecked")
+    default T loadData(final File file, final boolean save) throws IOException, InvalidConfigurationException {
         val fieldsData = getFieldsData();
 
         val configuration = new YamlConfiguration() {{
@@ -39,7 +39,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                     updated = true;
                     
                     continue;
-                } catch (IllegalStateException | IllegalAccessException e) {
+                } catch (final IllegalStateException | IllegalAccessException e) {
                     onExceptionGettingField(e);
                 }
 
@@ -48,7 +48,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                     fieldData.getKey().set(this, configValue);
 
                     if (fieldData.getValue().getComment().length > 0); // TODO: 02.04.2018 comments
-                } catch (IllegalAccessException e) {
+                } catch (final IllegalAccessException e) {
                     onExceptionSettingField(e);
                 }
             } finally {
@@ -56,12 +56,12 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
             }
         }
 
-        if (updated) configuration.save(file);
+        if (save && updated) configuration.save(file);
 
         return (T) this;
     }
 
-    @SuppressWarnings({"unchecked", "Duplicates"})
+    @SuppressWarnings("unchecked")
     default T saveData(final File file) throws IOException, InvalidConfigurationException {
         val fieldsData = getFieldsData();
 
@@ -79,7 +79,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                 final Object fieldValue;
                 try {
                     fieldValue = fieldData.getKey().get(this);
-                } catch (IllegalStateException | IllegalAccessException e) {
+                } catch (final IllegalStateException | IllegalAccessException e) {
                     onExceptionGettingField(e);
                     continue;
                 }
@@ -120,13 +120,30 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         return fieldsData;
     }
 
+    default T load(final File file, final boolean save) throws IOException, InvalidConfigurationException  {
+        if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
+
+        if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) onDirCreation();
+        if (!file.exists() && file.createNewFile()) onFileCreation();
+
+        return loadData(file, save);
+    }
+
+    default T load(final String path, final boolean save) throws IOException, InvalidConfigurationException  {
+        return load(new File(getPlugin().getDataFolder(), path), save);
+    }
+
+    default T load(final boolean save) throws IOException, InvalidConfigurationException  {
+        return load("config.yml", save);
+    }
+
     default T load(final File file) throws IOException, InvalidConfigurationException {
         if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
 
         if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) onDirCreation();
         if (!file.exists() && file.createNewFile()) onFileCreation();
 
-        return loadDataAndSave(file);
+        return loadData(file, true);
     }
 
     default T load(final String path) throws IOException, InvalidConfigurationException {
@@ -154,6 +171,26 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         return save("config.yml");
     }
 
+    @SuppressWarnings("unchecked")
+    default T copyFrom(final T otherConfigData) {
+        val fields = otherConfigData.getClass().getFields();
+
+        for (val field : fields) if (field.isAnnotationPresent(CfgField.class)) {
+            val accessible = field.isAccessible();
+            try {
+                field.setAccessible(true);
+
+                field.set(this, field.get(otherConfigData));
+            } catch (final IllegalAccessException e) {
+                onExceptionCopyingField(e);
+            } finally {
+                field.setAccessible(accessible);
+            }
+        }
+
+        return (T) this;
+    }
+
     default void onDirCreation() {
         getPlugin().getLogger().info("Config-file directory has been successfully created");
     }
@@ -169,6 +206,11 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     default void onExceptionSettingField(final Exception e) {
         getPlugin().getLogger().warning("Could not set value from config file:");
+        e.printStackTrace();
+    }
+
+    default void onExceptionCopyingField(final IllegalAccessException e) {
+        getPlugin().getLogger().warning("Could not copy value from one ConfigData object to another:");
         e.printStackTrace();
     }
 }

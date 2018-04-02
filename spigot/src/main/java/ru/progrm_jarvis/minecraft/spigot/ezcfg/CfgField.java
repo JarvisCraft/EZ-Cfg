@@ -57,6 +57,7 @@ public @interface CfgField {
         DOUBLE(new ConfigDataDouble(), double.class, Double.class),
         CHAR(new ConfigDataChar(), char.class, Character.class),
         STRING(new ConfigDataString(), String.class),
+        MAP(new ConfigDataMap(), Map.class),
         // Collections
         LIST(new ConfigDataList(), true),
         BOOLEAN_LIST(new ConfigDataListBoolean(), true, boolean.class, Boolean.class),
@@ -337,16 +338,34 @@ public @interface CfgField {
             }
         }
 
-        private abstract static class AbstractConfigDataList<T> extends ConfigData<List<T>> {
+        private static class ConfigDataMap extends ConfigData<Map<?, ?>> {
+            @Override
+            public Map<?, ?> get(final FileConfiguration configuration, final String path) {
+                return configuration.getConfigurationSection(path).getValues(false);
+            }
+
+            @Override
+            public Map<?, ?> get(final FileConfiguration configuration, final String path, final Map<?, ?> def) {
+                val section = configuration.getConfigurationSection(path);
+                return section == null ? def : section.getValues(false);
+            }
+
             @Override
             public boolean isValid(final FileConfiguration configuration, final String path) {
-                return configuration.isList(path);
+                return configuration.isConfigurationSection(path);
             }
         }
 
         ///////////////////////////////////////////////////////////////////////////
         // Lists
         ///////////////////////////////////////////////////////////////////////////
+
+        private abstract static class AbstractConfigDataList<T> extends ConfigData<List<T>> {
+            @Override
+            public boolean isValid(final FileConfiguration configuration, final String path) {
+                return configuration.isList(path);
+            }
+        }
 
         private static class ConfigDataList extends AbstractConfigDataList<Object> {
             @Override

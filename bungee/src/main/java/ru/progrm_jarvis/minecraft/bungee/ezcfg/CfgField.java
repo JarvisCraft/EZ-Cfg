@@ -11,7 +11,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -50,6 +52,7 @@ public @interface CfgField {
         DOUBLE(new ConfigDataDouble(), double.class, Double.class),
         CHAR(new ConfigDataChar(), char.class, Character.class),
         STRING(new ConfigDataString(), String.class),
+        MAP(new ConfigDataMap(), Map.class),
         // Collections
         LIST(new ConfigDataList(), true),
         BOOLEAN_LIST(new ConfigDataListBoolean(), true, boolean.class, Boolean.class),
@@ -272,12 +275,37 @@ public @interface CfgField {
             }
         }
 
-        private abstract static class AbstractConfigDataList<T> extends ConfigData<List<T>> {
+        private static class ConfigDataMap extends ConfigData<Map<?, ?>> {
+            @Override
+            public Map<?, ?> get(final Configuration configuration, final String path) {
+                val section = configuration.getSection(path);
+                val keys = section.getKeys();
+                if (keys.isEmpty()) return new HashMap<>();
+
+                val map = new HashMap<Object, Object>();
+                for (val key : keys) map.put(key, section.get(key));
+
+                return map;
+            }
+
+            @Override
+            public Map<?, ?> get(final Configuration configuration, final String path, final Map<?, ?> def) {
+                val section = configuration.getSection(path);
+                val keys = section.getKeys();
+                if (keys.isEmpty()) return def;
+
+                val map = new HashMap<Object, Object>();
+                for (val key : keys) map.put(key, section.get(key));
+
+                return map;
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////
         // Lists
         ///////////////////////////////////////////////////////////////////////////
+
+        private abstract static class AbstractConfigDataList<T> extends ConfigData<List<T>> {}
 
         private static class ConfigDataList extends AbstractConfigDataList<Object> {
             @Override
