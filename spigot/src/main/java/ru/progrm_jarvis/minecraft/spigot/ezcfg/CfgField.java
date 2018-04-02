@@ -112,17 +112,19 @@ public @interface CfgField {
             val isList = List.class.isAssignableFrom(field.getType());
 
             if (isList) {
-                // If is list
-                val typeArgument = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+                val fieldGenericType = field.getGenericType();
+                if (fieldGenericType instanceof ParameterizedType) {
+                    val typeArgument = ((ParameterizedType) fieldGenericType).getActualTypeArguments()[0];
 
-                for (val type : values()) {
-                    if (!type.isList()) continue;
+                    for (val type : values()) {
+                        if (!type.isList()) continue;
 
-                    if (typeArgument instanceof Class) for (val typeClass : type.typeClasses) if (typeClass
-                            .isAssignableFrom((Class<?>) typeArgument)) return type;
+                        if (typeArgument instanceof Class) for (val typeClass : type.typeClasses) if (typeClass
+                                .isAssignableFrom((Class<?>) typeArgument)) return type;
 
-                    return LIST;
-                }
+                        return LIST;
+                    }
+                } else return OBJECT;
             } else {
                 // If is not list
                 for (val type : values()) {
