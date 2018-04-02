@@ -1,5 +1,7 @@
 package ru.progrm_jarvis.minecraft.bungee.ezcfg;
 
+import lombok.NonNull;
+import lombok.Value;
 import lombok.val;
 import net.md_5.bungee.config.Configuration;
 
@@ -405,5 +407,13 @@ public @interface CfgField {
                 return configuration.get(path);
             }
         }
+    }
+
+    @Value(staticConstructor = "of")
+    class SerializationOptions {
+        @NonNull
+        private Type type;
+        @NonNull private String path;
+        @NonNull private String[] comment;
     }
 }

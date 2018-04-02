@@ -14,13 +14,113 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin> {
+
     ConfigurationProvider configurationProvider = ConfigurationProvider.getProvider(YamlConfiguration.class);
 
     P getPlugin();
 
-    void setConfiguration(Configuration configuration);
+    @SuppressWarnings({"unchecked", "Duplicates"})
+    default T loadDataAndSave(final File file) throws IOException {
+        val fieldsData = getFieldsData();
 
-    Configuration getConfiguration();
+        val configuration = configurationProvider.load(file);
+
+        var updated = false;
+        for (Map.Entry<Field, CfgField.SerializationOptions> fieldData : fieldsData.entrySet()) {
+            val accessible = fieldData.getKey().isAccessible();
+            try {
+                fieldData.getKey().setAccessible(true);
+
+                var configValue = fieldData.getValue().getType().getDataType()
+                        .get(configuration, fieldData.getValue().getPath(), null);
+
+                if (configValue == null) try {
+                    configValue = fieldData.getKey().get(this);
+                    configuration.set(fieldData.getValue().getPath(), configValue);
+
+                    updated = true;
+
+                    continue;
+                } catch (IllegalStateException | IllegalAccessException e) {
+                    onExceptionGettingField(e);
+                }
+
+                try {
+                    // assign value to the field of this exact instance
+                    fieldData.getKey().set(this, configValue);
+
+                    if (fieldData.getValue().getComment().length > 0); // TODO: 02.04.2018 comments
+                } catch (IllegalAccessException e) {
+                    onExceptionSettingField(e);
+                }
+            } finally {
+                System.out.println("phew");
+                fieldData.getKey().setAccessible(accessible);
+            }
+        }
+
+        if (updated) configurationProvider.save(configuration, file);
+
+        return (T) this;
+    }
+
+    @SuppressWarnings({"unchecked", "Duplicates"})
+    default T saveData(final File file) throws IOException {
+        val fieldsData = getFieldsData();
+
+        val configuration = configurationProvider.load(file);
+
+        var differs = false;
+        for (Map.Entry<Field, CfgField.SerializationOptions> fieldData : fieldsData.entrySet()) {
+            val accessible = fieldData.getKey().isAccessible();
+            try {
+                fieldData.getKey().setAccessible(true);
+
+
+                final Object fieldValue;
+                try {
+                    fieldValue = fieldData.getKey().get(this);
+                } catch (IllegalStateException | IllegalAccessException e) {
+                    onExceptionGettingField(e);
+                    continue;
+                }
+
+                val configValue = fieldData.getValue().getType().getDataType()
+                        .get(configuration, fieldData.getValue().getPath());
+
+                if (fieldValue != null && !fieldValue.equals(configValue)
+                        || configValue != null && !configValue.equals(fieldValue)) {
+                    configuration.set(fieldData.getValue().getPath(), fieldValue);
+
+                    differs = true;
+                }
+            } finally {
+                System.out.println("phew");
+                fieldData.getKey().setAccessible(accessible);
+            }
+        }
+
+        if (differs) configurationProvider.save(configuration, file);
+
+        return (T) this;
+    }
+
+    default Map<Field, CfgField.SerializationOptions> getFieldsData() {
+        val fieldsData = new HashMap<Field, CfgField.SerializationOptions>();
+
+        val fieldsDeclared = new ArrayList<Field>(Arrays.asList(this.getClass().getDeclaredFields()));
+        for (val field : fieldsDeclared) if (field.isAnnotationPresent(CfgField.class)) {
+            val data = field.getAnnotation(CfgField.class);
+
+            fieldsData.put(field, CfgField.SerializationOptions.of(
+                    data.type() == CfgField.Type.AUTO ? CfgField.Type.getType(field) : data.type(),
+                    data.value().isEmpty() ? field.getName() : data.value(),
+                    data.comment()
+            ));
+        }
+
+        return fieldsData;
+    }
 
     default T load(final File file) throws IOException {
         if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
@@ -28,7 +128,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) onDirCreation();
         if (!file.exists() && file.createNewFile()) onFileCreation();
 
-        return loadData(file);
+        return loadDataAndSave(file);
     }
 
     default T load(final String path) throws IOException {
@@ -36,61 +136,24 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
     }
 
     default T load() throws IOException {
-        return load(new File(getPlugin().getDataFolder(), "config.yml"));
+        return load("config.yml");
     }
 
-    @SuppressWarnings({"unchecked", "Duplicates"})
-    default T loadData(final File file) throws IOException {
-        var configuration = configurationProvider.load(file);
+    default T save(final File file) throws IOException {
+        if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
 
-        val fieldsDeclared = new ArrayList<Field>(Arrays.asList(this.getClass().getDeclaredFields()));
-        val fields = new HashMap<Field, CfgField>();
-        for (val field : fieldsDeclared)
-            if (field.isAnnotationPresent(CfgField.class)) fields
-                    .put(field, field.getAnnotation(CfgField.class));
+        if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) onDirCreation();
+        if (!file.exists() && file.createNewFile()) onFileCreation();
 
-        var updated = false;
-        for (val field : fields.entrySet()) {
-            CfgField.Type type = null;
+        return saveData(file);
+    }
 
-            if (field.getValue().type() == CfgField.Type.AUTO) type = CfgField.Type.getType(field.getKey());
+    default T save(final String path) throws IOException  {
+        return save(new File(getPlugin().getDataFolder(), path));
+    }
 
-            val accessible = field.getKey().isAccessible();
-            field.getKey().setAccessible(true);
-
-            val path = field.getValue().value().isEmpty() ? field.getKey().getName() : field.getValue().value();
-
-            var value = type.getDataType().get(configuration, path, null);
-
-            // if no value is in config file
-            if (value == null) try {
-                value = field.getKey().get(this);
-                configuration.set(path, value);
-
-                updated = true;
-            } catch (IllegalStateException | IllegalAccessException e) {
-                onExceptionSettingTo(e);
-            }
-
-            try {
-                // assign value to the field of this exact instance
-                field.getKey().set(this, value);
-
-                if (field.getValue().comment().length > 0) {
-                    // TODO: 12.11.2017 comment
-                }
-            } catch (IllegalAccessException e) {
-                onExceptionSettingFrom(e);
-            }
-
-            field.getKey().setAccessible(accessible);
-        }
-
-        if (updated) configurationProvider.save(configuration, file);
-
-        setConfiguration(configuration);
-
-        return (T) this;
+    default T save() throws IOException  {
+        return save("config.yml");
     }
 
     default void onDirCreation() {
@@ -101,12 +164,12 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         getPlugin().getLogger().info("Config-file has been successfully created");
     }
 
-    default void onExceptionSettingTo(final Exception e) {
+    default void onExceptionGettingField(final Exception e) {
         getPlugin().getLogger().warning("Could not set default value to config file:");
         e.printStackTrace();
     }
 
-    default void onExceptionSettingFrom(final Exception e) {
+    default void onExceptionSettingField(final Exception e) {
         getPlugin().getLogger().warning("Could not set value from config file:");
         e.printStackTrace();
     }

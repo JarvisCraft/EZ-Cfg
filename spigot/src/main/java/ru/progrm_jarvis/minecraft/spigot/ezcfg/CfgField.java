@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.minecraft.spigot.ezcfg;
 
 import lombok.NonNull;
+import lombok.Value;
 import lombok.val;
 import org.bukkit.Color;
 import org.bukkit.OfflinePlayer;
@@ -564,5 +565,12 @@ public @interface CfgField {
                 return configuration.isSet(path);
             }
         }
+    }
+
+    @Value(staticConstructor = "of")
+    class SerializationOptions {
+        @NonNull private Type type;
+        @NonNull private String path;
+        @NonNull private String[] comment;
     }
 }
