@@ -54,7 +54,6 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                     onExceptionSettingField(e);
                 }
             } finally {
-                System.out.println("phew");
                 fieldData.getKey().setAccessible(accessible);
             }
         }
@@ -95,7 +94,6 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                     differs = true;
                 }
             } finally {
-                System.out.println("phew");
                 fieldData.getKey().setAccessible(accessible);
             }
         }
