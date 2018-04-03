@@ -20,12 +20,10 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     @SuppressWarnings("unchecked")
     default T loadData(final File file, final boolean save) throws IOException {
-        val fieldsData = getFieldsData();
-
         val configuration = configurationProvider.load(file);
 
         var updated = false;
-        for (Map.Entry<Field, CfgField.SerializationOptions> fieldData : fieldsData.entrySet()) {
+        for (val fieldData : getFieldsData().entrySet()) {
             val accessible = fieldData.getKey().isAccessible();
             try {
                 fieldData.getKey().setAccessible(true);
@@ -64,12 +62,10 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     @SuppressWarnings("unchecked")
     default T saveData(final File file) throws IOException {
-        val fieldsData = getFieldsData();
-
         val configuration = configurationProvider.load(file);
 
         var differs = false;
-        for (Map.Entry<Field, CfgField.SerializationOptions> fieldData : fieldsData.entrySet()) {
+        for (val fieldData : getFieldsData().entrySet()) {
             val accessible = fieldData.getKey().isAccessible();
             try {
                 fieldData.getKey().setAccessible(true);
@@ -172,9 +168,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     @SuppressWarnings("unchecked")
     default T copyFrom(final T otherConfigData) {
-        val fields = otherConfigData.getClass().getFields();
-
-        for (val field : fields) if (field.isAnnotationPresent(CfgField.class)) {
+        for (val field : getClass().getDeclaredFields()) if (field.isAnnotationPresent(CfgField.class)) {
             val accessible = field.isAccessible();
             try {
                 field.setAccessible(true);
