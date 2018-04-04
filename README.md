@@ -7,8 +7,6 @@ The following example gives an example of usage (uses Lombok)
 public class MySetting implements YamlConfigData<MySetting, MyPlugin> {
     // Required
     @NonNull private final MyPlugin plugin;
-    // Required
-    private YamlConfiguration configuration;
 
     @CfgField private String myString = "foo";
     @CfgField("IsSomeOptionEnabled") private boolean optionEnabled = true;
