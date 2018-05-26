@@ -162,6 +162,7 @@ public @interface CfgField {
 
             @Override
             public Boolean get(final Configuration configuration, final String path, final Boolean def) {
+                if (def == null) return configuration.contains(path) ? configuration.getBoolean(path) : null;
                 return configuration.getBoolean(path, def);
             }
         }
@@ -174,6 +175,7 @@ public @interface CfgField {
 
             @Override
             public Byte get(final Configuration configuration, final String path, final Byte def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getByte(path, def);
             }
         }
@@ -186,6 +188,7 @@ public @interface CfgField {
 
             @Override
             public Short get(final Configuration configuration, final String path, final Short def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getShort(path, def);
             }
         }
@@ -198,6 +201,7 @@ public @interface CfgField {
 
             @Override
             public Integer get(final Configuration configuration, final String path, final Integer def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getInt(path, def);
             }
         }
@@ -210,6 +214,7 @@ public @interface CfgField {
 
             @Override
             public Long get(final Configuration configuration, final String path, final Long def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getLong(path, def);
             }
         }
@@ -222,6 +227,7 @@ public @interface CfgField {
 
             @Override
             public Float get(final Configuration configuration, final String path, final Float def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getFloat(path, def);
             }
         }
@@ -234,6 +240,7 @@ public @interface CfgField {
 
             @Override
             public Double get(final Configuration configuration, final String path, final Double def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getDouble(path, def);
             }
         }
@@ -246,6 +253,7 @@ public @interface CfgField {
 
             @Override
             public Character get(final Configuration configuration, final String path, final Character def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getChar(path, def);
             }
         }
@@ -258,6 +266,7 @@ public @interface CfgField {
 
             @Override
             public String get(final Configuration configuration, final String path, final String def) {
+                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
                 return configuration.getString(path, def);
             }
         }
