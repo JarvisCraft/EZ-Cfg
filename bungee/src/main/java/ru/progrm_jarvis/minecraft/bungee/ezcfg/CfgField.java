@@ -140,11 +140,13 @@ public @interface CfgField {
                 configuration.set(path, value);
             }
 
-            public abstract T get(Configuration configuration, String path);
+            @SuppressWarnings("unchecked")
+            public T get(Configuration configuration, String path) {
+                return (T) configuration.get(path);
+            }
 
             public T get(final Configuration configuration, final String path, final T def) {
-                val value = get(configuration, path);
-                return value == null ? def : value;
+                return configuration.get(path, def);
             }
         }
 
@@ -160,37 +162,31 @@ public @interface CfgField {
 
             @Override
             public Boolean get(final Configuration configuration, final String path, final Boolean def) {
-                val value = configuration.get(path, def);
-                if (value != null) return value;
-                else return def;
+                return configuration.getBoolean(path, def);
             }
         }
 
         private static class ConfigDataByte extends ConfigData<Byte> {
             @Override
             public Byte get(final Configuration configuration, final String path) {
-                return (byte) configuration.getInt(path);
+                return configuration.getByte(path);
             }
 
             @Override
             public Byte get(final Configuration configuration, final String path, final Byte def) {
-                val value = configuration.get(path);
-                if (value instanceof Number) return ((Number) value).byteValue();
-                else return def;
+                return configuration.getByte(path, def);
             }
         }
 
         private static class ConfigDataShort extends ConfigData<Short> {
             @Override
             public Short get(final Configuration configuration, final String path) {
-                return (short) configuration.getInt(path);
+                return configuration.getShort(path);
             }
 
             @Override
             public Short get(final Configuration configuration, final String path, final Short def) {
-                val value = configuration.get(path);
-                if (value instanceof Number) return ((Number) value).shortValue();
-                else return def;
+                return configuration.getShort(path, def);
             }
         }
 
@@ -202,9 +198,7 @@ public @interface CfgField {
 
             @Override
             public Integer get(final Configuration configuration, final String path, final Integer def) {
-                val value = configuration.get(path);
-                if (value instanceof Number) return ((Number) value).intValue();
-                else return def;
+                return configuration.getInt(path, def);
             }
         }
 
@@ -216,23 +210,19 @@ public @interface CfgField {
 
             @Override
             public Long get(final Configuration configuration, final String path, final Long def) {
-                val value = configuration.get(path, def);
-                if (value != null) return value;
-                else return def;
+                return configuration.getLong(path, def);
             }
         }
 
         private static class ConfigDataFloat extends ConfigData<Float> {
             @Override
             public Float get(final Configuration configuration, final String path) {
-                return (float) configuration.getDouble(path);
+                return configuration.getFloat(path);
             }
 
             @Override
             public Float get(final Configuration configuration, final String path, final Float def) {
-                val value = configuration.get(path);
-                if (value instanceof Number) return ((Number) value).floatValue();
-                else return def;
+                return configuration.getFloat(path, def);
             }
         }
 
@@ -244,22 +234,19 @@ public @interface CfgField {
 
             @Override
             public Double get(final Configuration configuration, final String path, final Double def) {
-                val value = configuration.get(path);
-                if (value instanceof Number) return ((Number) value).doubleValue();
-                else return def;
+                return configuration.getDouble(path, def);
             }
         }
 
         private static class ConfigDataChar extends ConfigData<Character> {
             @Override
             public Character get(final Configuration configuration, final String path) {
-                return configuration.getString(path).charAt(0);
+                return configuration.getChar(path);
             }
 
             @Override
             public Character get(final Configuration configuration, final String path, final Character def) {
-                val value = configuration.getString(path);
-                return value == null || value.isEmpty() ? def : value.charAt(0);
+                return configuration.getChar(path, def);
             }
         }
 
@@ -434,13 +421,17 @@ public @interface CfgField {
             public Object get(final Configuration configuration, final String path) {
                 return configuration.get(path);
             }
+
+            @Override
+            public Object get(Configuration configuration, String path, Object def) {
+                return configuration.get(path, def);
+            }
         }
     }
 
     @Value(staticConstructor = "of")
     class SerializationOptions {
-        @NonNull
-        private Type type;
+        @NonNull private Type type;
         @NonNull private String path;
         @NonNull private String[] comment;
     }

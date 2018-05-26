@@ -13,7 +13,18 @@ import java.util.*;
 
 @SuppressWarnings({"unused", "Duplicates"})
 public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin> {
+
     P getPlugin();
+
+    default List<Field> getFields(final Class<?> clazz) {
+
+        val parentClass = (Class<?>) clazz.getSuperclass();
+
+        val fields = new ArrayList<Field>(Arrays.asList(clazz.getDeclaredFields()));
+        if (parentClass != null && parentClass != Object.class) fields.addAll(getFields(parentClass));
+
+        return fields;
+    }
 
     @SuppressWarnings("unchecked")
     default T loadData(final File file, final boolean save) throws IOException, InvalidConfigurationException {
@@ -102,8 +113,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
     default Map<Field, CfgField.SerializationOptions> getFieldsData() {
         val fieldsData = new HashMap<Field, CfgField.SerializationOptions>();
 
-        val fieldsDeclared = new ArrayList<Field>(Arrays.asList(this.getClass().getDeclaredFields()));
-        for (val field : fieldsDeclared) if (field.isAnnotationPresent(CfgField.class)) {
+        for (val field : getFields(getClass())) if (field.isAnnotationPresent(CfgField.class)) {
             val data = field.getAnnotation(CfgField.class);
 
             fieldsData.put(field, CfgField.SerializationOptions.of(
@@ -169,7 +179,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     @SuppressWarnings("unchecked")
     default T copyFrom(final T otherConfigData) {
-        for (val field : getClass().getDeclaredFields()) if (field.isAnnotationPresent(CfgField.class)) {
+        for (val field : getFields(getClass())) if (field.isAnnotationPresent(CfgField.class)) {
             val accessible = field.isAccessible();
             try {
                 field.setAccessible(true);
