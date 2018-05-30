@@ -39,7 +39,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                 fieldData.getKey().setAccessible(true);
 
                 var configValue = fieldData.getValue().getType().getDataType()
-                        .get(configuration, fieldData.getValue().getPath(), null);
+                        .get(configuration, fieldData.getKey().getType(), null, fieldData.getValue().getPath());
 
                 if (configValue == null) try {
                     configValue = fieldData.getKey().get(this);
@@ -90,7 +90,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                 }
 
                 val configValue = fieldData.getValue().getType().getDataType()
-                        .get(configuration, fieldData.getValue().getPath());
+                        .get(configuration, fieldData.getKey().getType(), fieldData.getValue().getPath());
 
                 if (fieldValue != null && !fieldValue.equals(configValue)
                         || configValue != null && !configValue.equals(fieldValue)) {

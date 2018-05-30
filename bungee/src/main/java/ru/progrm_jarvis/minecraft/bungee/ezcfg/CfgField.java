@@ -1,5 +1,6 @@
 package ru.progrm_jarvis.minecraft.bungee.ezcfg;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.val;
@@ -40,6 +41,7 @@ public @interface CfgField {
      */
     String[] comment() default {};
 
+    @Getter
     enum Type {
         AUTO(null),
         // Base types
@@ -52,6 +54,7 @@ public @interface CfgField {
         DOUBLE(new ConfigDataDouble(), double.class, Double.class),
         CHAR(new ConfigDataChar(), char.class, Character.class),
         STRING(new ConfigDataString(), String.class),
+        ENUM(new ConfigDataEnum(), Enum.class),
         MAP(new ConfigDataMap(), Map.class),
         // Collections
         LIST(new ConfigDataList(), true),
@@ -66,26 +69,11 @@ public @interface CfgField {
         STRING_LIST(new ConfigDataListString(), true, String.class),
         OBJECT(new ConfigDataObject());
 
-        /**
-         * Method to get the value of the field
-         */
         private final ConfigData dataType;
-
-        public ConfigData getDataType() {
-            return dataType;
-        }
 
         private final Class<?>[] typeClasses;
 
-        public Class<?>[] getTypeClasses() {
-            return typeClasses;
-        }
-
         private final boolean list;
-
-        public boolean isList() {
-            return list;
-        }
 
         Type(final ConfigData dataType, Class... typeClasses) {
             this(dataType, false, typeClasses);
@@ -141,11 +129,11 @@ public @interface CfgField {
             }
 
             @SuppressWarnings("unchecked")
-            public T get(Configuration configuration, String path) {
+            public T get(final Configuration configuration, final Class<T> type, final String path) {
                 return (T) configuration.get(path);
             }
 
-            public T get(final Configuration configuration, final String path, final T def) {
+            public T get(final Configuration configuration, final Class<T> type, final T def, final String path) {
                 return configuration.get(path, def);
             }
         }
@@ -156,12 +144,12 @@ public @interface CfgField {
 
         private static class ConfigDataBoolean extends ConfigData<Boolean> {
             @Override
-            public Boolean get(final Configuration configuration, final String path) {
+            public Boolean get(final Configuration configuration, final Class<Boolean> type, final String path) {
                 return configuration.getBoolean(path);
             }
 
             @Override
-            public Boolean get(final Configuration configuration, final String path, final Boolean def) {
+            public Boolean get(final Configuration configuration, final Class<Boolean> type, final Boolean def, final String path) {
                 if (def == null) return configuration.contains(path) ? configuration.getBoolean(path) : null;
                 return configuration.getBoolean(path, def);
             }
@@ -169,111 +157,130 @@ public @interface CfgField {
 
         private static class ConfigDataByte extends ConfigData<Byte> {
             @Override
-            public Byte get(final Configuration configuration, final String path) {
+            public Byte get(final Configuration configuration, final Class<Byte> type, final String path) {
                 return configuration.getByte(path);
             }
 
             @Override
-            public Byte get(final Configuration configuration, final String path, final Byte def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public Byte get(final Configuration configuration, final Class<Byte> type, final Byte def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getByte(path, def);
             }
         }
 
         private static class ConfigDataShort extends ConfigData<Short> {
             @Override
-            public Short get(final Configuration configuration, final String path) {
+            public Short get(final Configuration configuration, final Class<Short> type, final String path) {
                 return configuration.getShort(path);
             }
 
             @Override
-            public Short get(final Configuration configuration, final String path, final Short def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public Short get(final Configuration configuration, final Class<Short> type, final Short def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getShort(path, def);
             }
         }
 
         private static class ConfigDataInt extends ConfigData<Integer> {
             @Override
-            public Integer get(final Configuration configuration, final String path) {
+            public Integer get(final Configuration configuration, final Class<Integer> type, final String path) {
                 return configuration.getInt(path);
             }
 
             @Override
-            public Integer get(final Configuration configuration, final String path, final Integer def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public Integer get(final Configuration configuration, final Class<Integer> type, final Integer def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getInt(path, def);
             }
         }
 
         private static class ConfigDataLong extends ConfigData<Long> {
             @Override
-            public Long get(final Configuration configuration, final String path) {
+            public Long get(final Configuration configuration, final Class<Long> type, final String path) {
                 return configuration.getLong(path);
             }
 
             @Override
-            public Long get(final Configuration configuration, final String path, final Long def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public Long get(final Configuration configuration, final Class<Long> type, final Long def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getLong(path, def);
             }
         }
 
         private static class ConfigDataFloat extends ConfigData<Float> {
             @Override
-            public Float get(final Configuration configuration, final String path) {
+            public Float get(final Configuration configuration, final Class<Float> type, final String path) {
                 return configuration.getFloat(path);
             }
 
             @Override
-            public Float get(final Configuration configuration, final String path, final Float def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public Float get(final Configuration configuration, final Class<Float> type, final Float def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getFloat(path, def);
             }
         }
 
         private static class ConfigDataDouble extends ConfigData<Double> {
             @Override
-            public Double get(final Configuration configuration, final String path) {
+            public Double get(final Configuration configuration, final Class<Double> type, final String path) {
                 return configuration.getDouble(path);
             }
 
             @Override
-            public Double get(final Configuration configuration, final String path, final Double def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public Double get(final Configuration configuration, final Class<Double> type, final Double def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getDouble(path, def);
             }
         }
 
         private static class ConfigDataChar extends ConfigData<Character> {
             @Override
-            public Character get(final Configuration configuration, final String path) {
+            public Character get(final Configuration configuration, final Class<Character> type, final String path) {
                 return configuration.getChar(path);
             }
 
             @Override
-            public Character get(final Configuration configuration, final String path, final Character def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public Character get(final Configuration configuration, final Class<Character> type, final Character def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getChar(path, def);
             }
         }
 
         private static class ConfigDataString extends ConfigData<String> {
             @Override
-            public String get(final Configuration configuration, final String path) {
+            public String get(final Configuration configuration, final Class<String> type, final String path) {
                 return configuration.getString(path);
             }
 
             @Override
-            public String get(final Configuration configuration, final String path, final String def) {
-                if (def == null) return configuration.contains(path) ? get(configuration, path) : null;
+            public String get(final Configuration configuration, final Class<String> type, final String def, final String path) {
+                if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getString(path, def);
+            }
+        }
+
+        private static class ConfigDataEnum<E extends Enum<E>> extends ConfigData<E> {
+            @Override
+            public E get(final Configuration configuration, final Class<E> type, final String path) {
+                val name = configuration.getString(path);
+                if (name == null) return null;
+                try {
+                    return Enum.valueOf(type, name);
+                } catch (final IllegalArgumentException e) {
+                    return null;
+                }
+            }
+
+            @Override
+            public E get(final Configuration configuration, final Class<E> type, final E def, final String path) {
+                val value = get(configuration, type, path);
+                return value == null ? def : value;
             }
         }
 
         private static class ConfigDataMap extends ConfigData<Map<?, ?>> {
             @Override
-            public Map<?, ?> get(final Configuration configuration, final String path) {
+            public Map<?, ?> get(final Configuration configuration, final Class<Map<?, ?>> type, final String path) {
                 val section = configuration.getSection(path);
                 val keys = section.getKeys();
                 if (keys.isEmpty()) return new HashMap<>();
@@ -285,7 +292,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Map<?, ?> get(final Configuration configuration, final String path, final Map<?, ?> def) {
+            public Map<?, ?> get(final Configuration configuration, final Class<Map<?, ?>> type, final Map<?, ?> def, final String path) {
                 val section = configuration.getSection(path);
                 val keys = section.getKeys();
                 if (keys.isEmpty()) return def;
@@ -306,133 +313,133 @@ public @interface CfgField {
         private static class ConfigDataList extends AbstractConfigDataList<Object> {
             @Override
             @SuppressWarnings("unchecked")
-            public List<Object> get(final Configuration configuration, final String path) {
+            public List<Object> get(final Configuration configuration, final Class<List<Object>> type, final String path) {
                 return (List<Object>) configuration.getList(path);
             }
 
             @Override
             @SuppressWarnings("unchecked")
-            public List<Object> get(Configuration configuration, String path, List<Object> def) {
+            public List<Object> get(Configuration configuration, final Class<List<Object>> type, List<Object> def, String path) {
                 return configuration.getList(path) == null ? def : (List<Object>) configuration.getList(path);
             }
         }
 
         private static class ConfigDataListBoolean extends AbstractConfigDataList<Boolean> {
             @Override
-            public List<Boolean> get(final Configuration configuration, final String path) {
+            public List<Boolean> get(final Configuration configuration, final Class<List<Boolean>> type, final String path) {
                 return configuration.getBooleanList(path);
             }
 
             @Override
-            public List<Boolean> get(Configuration configuration, String path, List<Boolean> def) {
+            public List<Boolean> get(Configuration configuration, final Class<List<Boolean>> type, List<Boolean> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getBooleanList(path);
             }
         }
 
         private static class ConfigDataListByte extends AbstractConfigDataList<Byte> {
             @Override
-            public List<Byte> get(final Configuration configuration, final String path) {
+            public List<Byte> get(final Configuration configuration, final Class<List<Byte>> type, final String path) {
                 return configuration.getByteList(path);
             }
 
             @Override
-            public List<Byte> get(Configuration configuration, String path, List<Byte> def) {
+            public List<Byte> get(Configuration configuration, final Class<List<Byte>> type, List<Byte> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getByteList(path);
             }
         }
 
         private static class ConfigDataListShort extends AbstractConfigDataList<Short> {
             @Override
-            public List<Short> get(final Configuration configuration, final String path) {
+            public List<Short> get(final Configuration configuration, final Class<List<Short>> type, final String path) {
                 return configuration.getShortList(path);
             }
 
             @Override
-            public List<Short> get(Configuration configuration, String path, List<Short> def) {
+            public List<Short> get(Configuration configuration, final Class<List<Short>> type, List<Short> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getShortList(path);
             }
         }
 
         private static class ConfigDataListInt extends AbstractConfigDataList<Integer> {
             @Override
-            public List<Integer> get(final Configuration configuration, final String path) {
+            public List<Integer> get(final Configuration configuration, final Class<List<Integer>> type, final String path) {
                 return configuration.getIntList(path);
             }
 
             @Override
-            public List<Integer> get(Configuration configuration, String path, List<Integer> def) {
+            public List<Integer> get(Configuration configuration, final Class<List<Integer>> type, List<Integer> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getIntList(path);
             }
         }
 
         private static class ConfigDataListLong extends AbstractConfigDataList<Long> {
             @Override
-            public List<Long> get(final Configuration configuration, final String path) {
+            public List<Long> get(final Configuration configuration, final Class<List<Long>> type, final String path) {
                 return configuration.getLongList(path);
             }
 
             @Override
-            public List<Long> get(Configuration configuration, String path, List<Long> def) {
+            public List<Long> get(Configuration configuration, final Class<List<Long>> type, List<Long> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getLongList(path);
             }
         }
 
         private static class ConfigDataListFloat extends AbstractConfigDataList<Float> {
             @Override
-            public List<Float> get(final Configuration configuration, final String path) {
+            public List<Float> get(final Configuration configuration, final Class<List<Float>> type, final String path) {
                 return configuration.getFloatList(path);
             }
 
             @Override
-            public List<Float> get(Configuration configuration, String path, List<Float> def) {
+            public List<Float> get(Configuration configuration, final Class<List<Float>> type, List<Float> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getFloatList(path);
             }
         }
 
         private static class ConfigDataListDouble extends AbstractConfigDataList<Double> {
             @Override
-            public List<Double> get(final Configuration configuration, final String path) {
+            public List<Double> get(final Configuration configuration, final Class<List<Double>> type, final String path) {
                 return configuration.getDoubleList(path);
             }
 
             @Override
-            public List<Double> get(Configuration configuration, String path, List<Double> def) {
+            public List<Double> get(Configuration configuration, final Class<List<Double>> type, List<Double> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getDoubleList(path);
             }
         }
 
         private static class ConfigDataListChar extends AbstractConfigDataList<Character> {
             @Override
-            public List<Character> get(final Configuration configuration, final String path) {
+            public List<Character> get(final Configuration configuration, final Class<List<Character>> type, final String path) {
                 return configuration.getCharList(path);
             }
 
             @Override
-            public List<Character> get(Configuration configuration, String path, List<Character> def) {
+            public List<Character> get(Configuration configuration, final Class<List<Character>> type, List<Character> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getCharList(path);
             }
         }
 
         private static class ConfigDataListString extends AbstractConfigDataList<String> {
             @Override
-            public List<String> get(final Configuration configuration, final String path) {
+            public List<String> get(final Configuration configuration, final Class<List<String>> type, final String path) {
                 return configuration.getStringList(path);
             }
 
             @Override
-            public List<String> get(Configuration configuration, String path, List<String> def) {
+            public List<String> get(Configuration configuration, final Class<List<String>> type, List<String> def, String path) {
                 return configuration.getList(path) == null ? def : configuration.getStringList(path);
             }
         }
 
         private static class ConfigDataObject extends ConfigData {
             @Override
-            public Object get(final Configuration configuration, final String path) {
+            public Object get(final Configuration configuration, Class type, final String path) {
                 return configuration.get(path);
             }
 
             @Override
-            public Object get(Configuration configuration, String path, Object def) {
+            public Object get(Configuration configuration, Class type, Object def, String path) {
                 return configuration.get(path, def);
             }
         }
