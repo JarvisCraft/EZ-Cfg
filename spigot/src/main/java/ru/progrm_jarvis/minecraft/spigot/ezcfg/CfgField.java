@@ -331,6 +331,11 @@ public @interface CfgField {
 
         private static class ConfigDataEnum<E extends Enum<E>> extends ConfigData<E> {
             @Override
+            public void set(final FileConfiguration configuration, final String path, final E value) {
+                configuration.set(path, value.name());
+            }
+
+            @Override
             public E get(final FileConfiguration configuration, final Class<E> type, final String path) {
                 val name = configuration.getString(path);
                 if (name == null) return null;
