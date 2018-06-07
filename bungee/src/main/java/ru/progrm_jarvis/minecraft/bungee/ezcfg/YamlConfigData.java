@@ -9,6 +9,7 @@ import net.md_5.bungee.config.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 @SuppressWarnings({"unused", "Duplicates"})
@@ -22,7 +23,8 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
         val parentClass = (Class<?>) clazz.getSuperclass();
 
-        val fields = new ArrayList<Field>(Arrays.asList(clazz.getDeclaredFields()));
+        val fields = new ArrayList<Field>();
+        for (val field : clazz.getDeclaredFields()) if (Modifier.isStatic(field.getModifiers())) fields.add(field);
         if (parentClass != null && parentClass != Object.class) fields.addAll(getFields(parentClass));
 
         return fields;
