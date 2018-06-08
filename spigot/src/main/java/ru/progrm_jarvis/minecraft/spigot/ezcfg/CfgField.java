@@ -16,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -154,6 +155,10 @@ public @interface CfgField {
             }
 
             public abstract boolean isValid(FileConfiguration configuration, String path);
+
+            public T getDefault() {
+                return null;
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -180,7 +185,12 @@ public @interface CfgField {
             }
         }
 
-        private static class ConfigDataByte extends ConfigData<Byte> {
+        private static abstract class ConfigDataNumeric<T extends Number> extends ConfigData<T> {
+            @Override
+            public abstract T getDefault();
+        }
+
+        private static class ConfigDataByte extends ConfigDataNumeric<Byte> {
             @Override
             public Byte get(final FileConfiguration configuration, final Class<Byte> type, final String path) {
                 return (byte) configuration.getInt(path);
@@ -197,9 +207,14 @@ public @interface CfgField {
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isInt(path);
             }
+
+            @Override
+            public Byte getDefault() {
+                return 0;
+            }
         }
 
-        private static class ConfigDataShort extends ConfigData<Short> {
+        private static class ConfigDataShort extends ConfigDataNumeric<Short> {
             @Override
             public Short get(final FileConfiguration configuration, final Class<Short> type, final String path) {
                 return (short) configuration.getInt(path);
@@ -216,9 +231,14 @@ public @interface CfgField {
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isInt(path);
             }
+
+            @Override
+            public Short getDefault() {
+                return 0;
+            }
         }
 
-        private static class ConfigDataInt extends ConfigData<Integer> {
+        private static class ConfigDataInt extends ConfigDataNumeric<Integer> {
             @Override
             public Integer get(final FileConfiguration configuration, final Class<Integer> type, final String path) {
                 return configuration.getInt(path);
@@ -235,9 +255,14 @@ public @interface CfgField {
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isInt(path);
             }
+
+            @Override
+            public Integer getDefault() {
+                return 0;
+            }
         }
 
-        private static class ConfigDataLong extends ConfigData<Long> {
+        private static class ConfigDataLong extends ConfigDataNumeric<Long> {
             @Override
             public Long get(final FileConfiguration configuration, final Class<Long> type, final String path) {
                 return configuration.getLong(path);
@@ -254,9 +279,14 @@ public @interface CfgField {
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isLong(path);
             }
+
+            @Override
+            public Long getDefault() {
+                return 0L;
+            }
         }
 
-        private static class ConfigDataFloat extends ConfigData<Float> {
+        private static class ConfigDataFloat extends ConfigDataNumeric<Float> {
             @Override
             public Float get(final FileConfiguration configuration, final Class<Float> type, final String path) {
                 return (float) configuration.getDouble(path);
@@ -273,9 +303,14 @@ public @interface CfgField {
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isDouble(path);
             }
+
+            @Override
+            public Float getDefault() {
+                return 0f;
+            }
         }
 
-        private static class ConfigDataDouble extends ConfigData<Double> {
+        private static class ConfigDataDouble extends ConfigDataNumeric<Double> {
             @Override
             public Double get(final FileConfiguration configuration, final Class<Double> type, final String path) {
                 return configuration.getDouble(path);
@@ -291,6 +326,11 @@ public @interface CfgField {
             @Override
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isDouble(path);
+            }
+
+            @Override
+            public Double getDefault() {
+                return 0d;
             }
         }
 
@@ -310,6 +350,11 @@ public @interface CfgField {
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isInt(path);
             }
+
+            @Override
+            public Character getDefault() {
+                return 0;
+            }
         }
 
         private static class ConfigDataString extends ConfigData<String> {
@@ -326,6 +371,11 @@ public @interface CfgField {
             @Override
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isString(path);
+            }
+
+            @Override
+            public String getDefault() {
+                return "";
             }
         }
 
@@ -374,6 +424,11 @@ public @interface CfgField {
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isConfigurationSection(path);
             }
+
+            @Override
+            public Map<?, ?> getDefault() {
+                return Collections.emptyMap();
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -384,6 +439,11 @@ public @interface CfgField {
             @Override
             public boolean isValid(final FileConfiguration configuration, final String path) {
                 return configuration.isList(path);
+            }
+
+            @Override
+            public List<T> getDefault() {
+                return Collections.emptyList();
             }
         }
 

@@ -17,13 +17,18 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     P getPlugin();
 
+    default boolean isSuperNotRequireCfgFieldAnnotation() {
+        return true;
+    }
+
     default List<Field> getFields(final Class<?> clazz) {
 
         val parentClass = (Class<?>) clazz.getSuperclass();
 
         val fields = new ArrayList<Field>();
-        for (val field : clazz.getDeclaredFields()) if ((field.getModifiers() & Modifier.STATIC) == 0) fields
-                .add(field);
+        for (val field : clazz.getDeclaredFields()) if ((field.getModifiers() & Modifier.STATIC) == 0
+                && (field.getModifiers() & Modifier.TRANSIENT) == 0
+                && (field.getModifiers() & Modifier.FINAL) == 0) fields.add(field);
         if (parentClass != null && parentClass != Object.class) fields.addAll(getFields(parentClass));
 
         return fields;
@@ -46,7 +51,9 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
                 if (configValue == null) try {
                     configValue = fieldData.getKey().get(this);
-                    configuration.set(fieldData.getValue().getPath(), configValue);
+                    if (configValue == null) configuration.set(fieldData.getValue().getPath(), fieldData.getValue()
+                            .getType().getDataType().getDefault());
+                    else configuration.set(fieldData.getValue().getPath(), configValue);
 
                     updated = true;
                     
@@ -57,7 +64,11 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
                 try {
                     // assign value to the field of this exact instance
-                    fieldData.getKey().set(this, configValue);
+                    try {
+                        fieldData.getKey().set(this, configValue);
+                    } catch (final IllegalArgumentException e) {
+                        fieldData.getKey().set(this, null);
+                    }
 
                     if (fieldData.getValue().getComment().length > 0); // TODO: 02.04.2018 comments
                 } catch (final IllegalAccessException e) {
@@ -84,7 +95,6 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
             val accessible = fieldData.getKey().isAccessible();
             try {
                 fieldData.getKey().setAccessible(true);
-
 
                 final Object fieldValue;
                 try {
@@ -116,7 +126,9 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
     default Map<Field, CfgField.SerializationOptions> getFieldsData() {
         val fieldsData = new HashMap<Field, CfgField.SerializationOptions>();
 
-        for (val field : getFields(getClass())) if (field.isAnnotationPresent(CfgField.class)) {
+        val thisClass = getClass();
+        val superNotRequireCfgFieldAnnotation = isSuperNotRequireCfgFieldAnnotation();
+        for (val field : getFields(thisClass)) if (field.isAnnotationPresent(CfgField.class)) {
             val data = field.getAnnotation(CfgField.class);
 
             fieldsData.put(field, CfgField.SerializationOptions.of(
@@ -124,7 +136,9 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                     data.value().isEmpty() ? field.getName() : data.value(),
                     data.comment()
             ));
-        }
+        } else if (superNotRequireCfgFieldAnnotation && field.getDeclaringClass() != thisClass) fieldsData
+                .put(field, CfgField.SerializationOptions
+                        .of(CfgField.Type.getType(field), field.getName(), new String[0]));
 
         return fieldsData;
     }
@@ -182,7 +196,10 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
     @SuppressWarnings("unchecked")
     default T copyFrom(final T otherConfigData) {
-        for (val field : getFields(getClass())) if (field.isAnnotationPresent(CfgField.class)) {
+        val thisClass = getClass();
+        val superNotRequireCfgFieldAnnotation = isSuperNotRequireCfgFieldAnnotation();
+        for (val field : getFields(thisClass)) if (superNotRequireCfgFieldAnnotation && field.getDeclaringClass()
+                != thisClass || field.isAnnotationPresent(CfgField.class)) {
             val accessible = field.isAccessible();
             try {
                 field.setAccessible(true);
