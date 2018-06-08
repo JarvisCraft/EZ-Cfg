@@ -22,7 +22,8 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         val parentClass = (Class<?>) clazz.getSuperclass();
 
         val fields = new ArrayList<Field>();
-        for (val field : clazz.getDeclaredFields()) if (Modifier.isStatic(field.getModifiers())) fields.add(field);
+        for (val field : clazz.getDeclaredFields()) if ((field.getModifiers() & Modifier.STATIC) == 0) fields
+                .add(field);
         if (parentClass != null && parentClass != Object.class) fields.addAll(getFields(parentClass));
 
         return fields;
