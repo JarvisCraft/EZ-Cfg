@@ -42,18 +42,21 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
         var updated = false;
         for (val fieldData : getFieldsData().entrySet()) {
-            val accessible = fieldData.getKey().isAccessible();
+            val field = fieldData.getKey();
+            val serializationOptions = fieldData.getValue();
+            
+            val accessible = field.isAccessible();
             try {
-                fieldData.getKey().setAccessible(true);
+                field.setAccessible(true);
 
-                var configValue = fieldData.getValue().getType().getDataType()
-                        .get(configuration, fieldData.getKey().getType(), null, fieldData.getValue().getPath());
+                val path = serializationOptions.getPath();
+                var configValue = serializationOptions.getType().getDataType()
+                        .get(configuration, field.getType(), null, path);
 
                 if (configValue == null) try {
-                    configValue = fieldData.getKey().get(this);
-                    if (configValue == null) configuration.set(fieldData.getValue().getPath(), fieldData.getValue()
-                            .getType().getDataType().getDefault());
-                    else configuration.set(fieldData.getValue().getPath(), configValue);
+                    configValue = field.get(this);
+                    if (configValue == null) configuration.createSection(path);
+                    else configuration.set(path, configValue);
 
                     updated = true;
                     
@@ -65,17 +68,17 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
                 try {
                     // assign value to the field of this exact instance
                     try {
-                        fieldData.getKey().set(this, configValue);
+                        field.set(this, configValue);
                     } catch (final IllegalArgumentException e) {
-                        fieldData.getKey().set(this, null);
+                        field.set(this, null);
                     }
 
-                    if (fieldData.getValue().getComment().length > 0); // TODO: 02.04.2018 comments
+                    if (serializationOptions.getComment().length > 0); // TODO: 02.04.2018 comments
                 } catch (final IllegalAccessException e) {
                     onExceptionSettingField(e);
                 }
             } finally {
-                fieldData.getKey().setAccessible(accessible);
+                field.setAccessible(accessible);
             }
         }
 
@@ -92,29 +95,32 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
         var differs = false;
         for (val fieldData : getFieldsData().entrySet()) {
-            val accessible = fieldData.getKey().isAccessible();
+            val field = fieldData.getKey();
+            val serializationOptions = fieldData.getValue();
+
+            val accessible = field.isAccessible();
             try {
-                fieldData.getKey().setAccessible(true);
+                field.setAccessible(true);
 
                 final Object fieldValue;
                 try {
-                    fieldValue = fieldData.getKey().get(this);
+                    fieldValue = field.get(this);
                 } catch (final IllegalStateException | IllegalAccessException e) {
                     onExceptionGettingField(e);
                     continue;
                 }
 
-                val configValue = fieldData.getValue().getType().getDataType()
-                        .get(configuration, fieldData.getKey().getType(), fieldData.getValue().getPath());
+                val configValue = serializationOptions.getType().getDataType()
+                        .get(configuration, field.getType(), serializationOptions.getPath());
 
                 if (fieldValue != null && !fieldValue.equals(configValue)
                         || configValue != null && !configValue.equals(fieldValue)) {
-                    configuration.set(fieldData.getValue().getPath(), fieldValue);
+                    configuration.set(serializationOptions.getPath(), fieldValue);
 
                     differs = true;
                 }
             } finally {
-                fieldData.getKey().setAccessible(accessible);
+                field.setAccessible(accessible);
             }
         }
 
