@@ -1,15 +1,16 @@
 package ru.progrm_jarvis.minecraft.bungee.ezcfg;
 
-import lombok.experimental.var;
+import lombok.SneakyThrows;
 import lombok.val;
+import lombok.var;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.util.*;
 
 @SuppressWarnings({"unused", "Duplicates"})
@@ -26,17 +27,15 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
     default List<Field> getFields(final Class<?> clazz) {
         val parentClass = (Class<?>) clazz.getSuperclass();
 
-        val fields = new ArrayList<Field>();
-        for (val field : clazz.getDeclaredFields()) if ((field.getModifiers() & Modifier.STATIC) == 0
-                && (field.getModifiers() & Modifier.TRANSIENT) == 0
-                && (field.getModifiers() & Modifier.FINAL) == 0) fields.add(field);
+        val fields = new ArrayList<Field>(Arrays.asList(clazz.getDeclaredFields()));
         if (parentClass != null && parentClass != Object.class) fields.addAll(getFields(parentClass));
 
         return fields;
     }
 
+    @SneakyThrows
     @SuppressWarnings("unchecked")
-    default T loadData(final File file, final boolean save) throws IOException {
+    default T loadData(final File file, final boolean save) {
         val configuration = configurationProvider.load(file);
 
         var updated = false;
@@ -88,15 +87,15 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         return (T) this;
     }
 
+    @SneakyThrows
     @SuppressWarnings("unchecked")
-    default T saveData(final File file) throws IOException {
+    default T saveData(final File file) {
         val configuration = configurationProvider.load(file);
 
         var differs = false;
         for (val fieldData : getFieldsData().entrySet()) {
             val field = fieldData.getKey();
             val serializationOptions = fieldData.getValue();
-            fieldData = null;
 
             val accessible = field.isAccessible();
             try {
@@ -134,68 +133,77 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
         val thisClass = getClass();
         val superNotRequireCfgFieldAnnotation = isSuperNotRequireCfgFieldAnnotation();
-        for (val field : getFields(thisClass)) if (superNotRequireCfgFieldAnnotation && field.getDeclaringClass()
-                    != thisClass || field.isAnnotationPresent(CfgField.class)) {
-            val data = field.getAnnotation(CfgField.class);
+        for (val field : getFields(thisClass)) {
+            if (field.isAnnotationPresent(CfgField.class)) {
+                val data = field.getAnnotation(CfgField.class);
 
-            fieldsData.put(field, CfgField.SerializationOptions.of(
-                    data.type() == CfgField.Type.AUTO ? CfgField.Type.getType(field) : data.type(),
-                    data.value().isEmpty() ? field.getName() : data.value(),
-                    data.comment()
-            ));
+                fieldsData.put(field, CfgField.SerializationOptions.of(
+                        data.type() == CfgField.Type.AUTO ? CfgField.Type.getType(field) : data.type(),
+                        data.value().isEmpty() ? field.getName() : data.value(),
+                        data.comment()
+                ));
+            } else if (superNotRequireCfgFieldAnnotation && field.getDeclaringClass() != thisClass
+                    && isModifiable(field.getModifiers())) fieldsData.put(field, CfgField.SerializationOptions
+                    .of(CfgField.Type.getType(field), field.getName(), new String[0]));
         }
 
         return fieldsData;
     }
 
-    default T load(final File file, final boolean save) throws IOException {
-        if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
-
-        if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) onDirCreation();
-        if (!file.exists() && file.createNewFile()) onFileCreation();
+    @SneakyThrows
+    default T load(final File file, final boolean save) {
+        {
+            val parent = file.getParentFile();
+            if (!parent.isDirectory()) Files.createDirectory(parent.toPath());
+        }
+        if (!file.isFile()) Files.createFile(file.toPath());
 
         return loadData(file, save);
     }
 
-    default T load(final String path, final boolean save) throws IOException {
+    default T load(final String path, final boolean save) {
         return load(new File(getPlugin().getDataFolder(), path), save);
     }
 
-    default T load(final boolean save) throws IOException {
+    default T load(final boolean save) {
         return load("config.yml", save);
     }
 
-    default T load(final File file) throws IOException {
-        if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
-
-        if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) onDirCreation();
-        if (!file.exists() && file.createNewFile()) onFileCreation();
+    @SneakyThrows
+    default T load(final File file) {
+        {
+            val parent = file.getParentFile();
+            if (!parent.isDirectory()) Files.createDirectory(parent.toPath());
+        }
+        if (!file.isFile()) Files.createFile(file.toPath());
 
         return loadData(file, true);
     }
 
-    default T load(final String path) throws IOException {
+    default T load(final String path) {
         return load(new File(getPlugin().getDataFolder(), path));
     }
 
-    default T load() throws IOException {
+    default T load() {
         return load("config.yml");
     }
 
-    default T save(final File file) throws IOException {
-        if (file.isDirectory()) throw new InputMismatchException("Given file is directory");
-
-        if (!file.getParentFile().exists() && file.getParentFile().mkdirs()) onDirCreation();
-        if (!file.exists() && file.createNewFile()) onFileCreation();
+    @SneakyThrows
+    default T save(final File file) {
+        {
+            val parent = file.getParentFile();
+            if (!parent.isDirectory()) Files.createDirectory(parent.toPath());
+        }
+        if (!file.isFile()) Files.createFile(file.toPath());
 
         return saveData(file);
     }
 
-    default T save(final String path) throws IOException  {
+    default T save(final String path)  {
         return save(new File(getPlugin().getDataFolder(), path));
     }
 
-    default T save() throws IOException  {
+    default T save()  {
         return save("config.yml");
     }
 
@@ -204,7 +212,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         val thisClass = getClass();
         val superNotRequireCfgFieldAnnotation = isSuperNotRequireCfgFieldAnnotation();
         for (val field : getFields(thisClass)) if (superNotRequireCfgFieldAnnotation && field.getDeclaringClass()
-                != thisClass || field.isAnnotationPresent(CfgField.class)) {
+                != thisClass && isModifiable(field.getModifiers()) || field.isAnnotationPresent(CfgField.class)) {
             val accessible = field.isAccessible();
             try {
                 field.setAccessible(true);
@@ -220,14 +228,6 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
         return (T) this;
     }
 
-    default void onDirCreation() {
-        getPlugin().getLogger().info("Config-file directory has been successfully created");
-    }
-
-    default void onFileCreation() {
-        getPlugin().getLogger().info("Config-file has been successfully created");
-    }
-
     default void onExceptionGettingField(final Exception e) {
         getPlugin().getLogger().warning("Could not set default value to config file:");
         e.printStackTrace();
@@ -241,5 +241,11 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
     default void onExceptionCopyingField(final IllegalAccessException e) {
         getPlugin().getLogger().warning("Could not copy value from one ConfigData object to another:");
         e.printStackTrace();
+    }
+
+    static boolean isModifiable(final int modifiers) {
+        return (modifiers & Modifier.STATIC) == 0
+                && (modifiers & Modifier.FINAL) == 0
+                && (modifiers & Modifier.TRANSIENT) == 0;
     }
 }
