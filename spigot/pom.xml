@@ -7,7 +7,7 @@
     <parent>
         <artifactId>ez-cfg</artifactId>
         <groupId>ru.progrm-jarvis.minecraft</groupId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>ez-cfg-spigot</artifactId>
