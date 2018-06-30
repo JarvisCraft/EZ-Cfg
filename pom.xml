@@ -24,7 +24,7 @@
 
     <distributionManagement>
         <repository>
-            <id>releases</id>
+            <id>central</id>
             <url>http://dev.questmg.ru:8081/artifactory/public</url>
         </repository>
         <snapshotRepository>
