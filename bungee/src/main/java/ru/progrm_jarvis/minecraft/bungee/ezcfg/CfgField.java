@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -68,6 +69,9 @@ public @interface CfgField {
         DOUBLE_LIST(new ConfigDataListDouble(), true, double.class, Double.class),
         CHAR_LIST(new ConfigDataListChar(), true, char.class, Character.class),
         STRING_LIST(new ConfigDataListString(), true, String.class),
+        // Special
+        PATTERN(new ConfigDataPattern(), Pattern.class),
+        // Object
         OBJECT(new ConfigDataObject());
 
         private final ConfigData dataType;
@@ -134,7 +138,7 @@ public @interface CfgField {
                 return (T) configuration.get(path);
             }
 
-            public T get(final Configuration configuration, final Class<T> type, final T def, final String path) {
+            public T get(final Configuration configuration, final Class<T> type, final String path, final T def) {
                 return configuration.get(path, def);
             }
 
@@ -154,7 +158,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Boolean get(final Configuration configuration, final Class<Boolean> type, final Boolean def, final String path) {
+            public Boolean get(final Configuration configuration, final Class<Boolean> type, final String path, final Boolean def) {
                 if (def == null) return configuration.contains(path) ? configuration.getBoolean(path) : null;
                 return configuration.getBoolean(path, def);
             }
@@ -177,7 +181,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Byte get(final Configuration configuration, final Class<Byte> type, final Byte def, final String path) {
+            public Byte get(final Configuration configuration, final Class<Byte> type, final String path, final Byte def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getByte(path, def);
             }
@@ -195,7 +199,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Short get(final Configuration configuration, final Class<Short> type, final Short def, final String path) {
+            public Short get(final Configuration configuration, final Class<Short> type, final String path, final Short def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getShort(path, def);
             }
@@ -213,7 +217,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Integer get(final Configuration configuration, final Class<Integer> type, final Integer def, final String path) {
+            public Integer get(final Configuration configuration, final Class<Integer> type, final String path, final Integer def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getInt(path, def);
             }
@@ -231,7 +235,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Long get(final Configuration configuration, final Class<Long> type, final Long def, final String path) {
+            public Long get(final Configuration configuration, final Class<Long> type, final String path, final Long def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getLong(path, def);
             }
@@ -249,7 +253,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Float get(final Configuration configuration, final Class<Float> type, final Float def, final String path) {
+            public Float get(final Configuration configuration, final Class<Float> type, final String path, final Float def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getFloat(path, def);
             }
@@ -267,7 +271,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Double get(final Configuration configuration, final Class<Double> type, final Double def, final String path) {
+            public Double get(final Configuration configuration, final Class<Double> type, final String path, final Double def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getDouble(path, def);
             }
@@ -285,7 +289,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Character get(final Configuration configuration, final Class<Character> type, final Character def, final String path) {
+            public Character get(final Configuration configuration, final Class<Character> type, final String path, final Character def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getChar(path, def);
             }
@@ -303,7 +307,7 @@ public @interface CfgField {
             }
 
             @Override
-            public String get(final Configuration configuration, final Class<String> type, final String def, final String path) {
+            public String get(final Configuration configuration, final Class<String> type, final String path, final String def) {
                 if (def == null) return configuration.contains(path) ? get(configuration, type, path) : null;
                 return configuration.getString(path, def);
             }
@@ -332,7 +336,7 @@ public @interface CfgField {
             }
 
             @Override
-            public E get(final Configuration configuration, final Class<E> type, final E def, final String path) {
+            public E get(final Configuration configuration, final Class<E> type, final String path, final E def) {
                 val value = get(configuration, type, path);
                 return value == null ? def : value;
             }
@@ -352,7 +356,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Map<?, ?> get(final Configuration configuration, final Class<Map<?, ?>> type, final Map<?, ?> def, final String path) {
+            public Map<?, ?> get(final Configuration configuration, final Class<Map<?, ?>> type, final String path, final Map<?, ?> def) {
                 val section = configuration.getSection(path);
                 val keys = section.getKeys();
                 if (keys.isEmpty()) return def;
@@ -384,7 +388,7 @@ public @interface CfgField {
 
             @Override
             @SuppressWarnings("unchecked")
-            public List<Object> get(Configuration configuration, final Class<List<Object>> type, List<Object> def, String path) {
+            public List<Object> get(Configuration configuration, final Class<List<Object>> type, String path, List<Object> def) {
                 return configuration.getList(path) == null ? def : (List<Object>) configuration.getList(path);
             }
 
@@ -401,7 +405,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Boolean> get(Configuration configuration, final Class<List<Boolean>> type, List<Boolean> def, String path) {
+            public List<Boolean> get(Configuration configuration, final Class<List<Boolean>> type, String path, List<Boolean> def) {
                 return configuration.getList(path) == null ? def : configuration.getBooleanList(path);
             }
         }
@@ -413,7 +417,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Byte> get(Configuration configuration, final Class<List<Byte>> type, List<Byte> def, String path) {
+            public List<Byte> get(Configuration configuration, final Class<List<Byte>> type, String path, List<Byte> def) {
                 return configuration.getList(path) == null ? def : configuration.getByteList(path);
             }
         }
@@ -425,7 +429,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Short> get(Configuration configuration, final Class<List<Short>> type, List<Short> def, String path) {
+            public List<Short> get(Configuration configuration, final Class<List<Short>> type, String path, List<Short> def) {
                 return configuration.getList(path) == null ? def : configuration.getShortList(path);
             }
         }
@@ -437,7 +441,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Integer> get(Configuration configuration, final Class<List<Integer>> type, List<Integer> def, String path) {
+            public List<Integer> get(Configuration configuration, final Class<List<Integer>> type, String path, List<Integer> def) {
                 return configuration.getList(path) == null ? def : configuration.getIntList(path);
             }
         }
@@ -449,7 +453,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Long> get(Configuration configuration, final Class<List<Long>> type, List<Long> def, String path) {
+            public List<Long> get(Configuration configuration, final Class<List<Long>> type, String path, List<Long> def) {
                 return configuration.getList(path) == null ? def : configuration.getLongList(path);
             }
         }
@@ -461,7 +465,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Float> get(Configuration configuration, final Class<List<Float>> type, List<Float> def, String path) {
+            public List<Float> get(Configuration configuration, final Class<List<Float>> type, String path, List<Float> def) {
                 return configuration.getList(path) == null ? def : configuration.getFloatList(path);
             }
         }
@@ -473,7 +477,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Double> get(Configuration configuration, final Class<List<Double>> type, List<Double> def, String path) {
+            public List<Double> get(Configuration configuration, final Class<List<Double>> type, String path, List<Double> def) {
                 return configuration.getList(path) == null ? def : configuration.getDoubleList(path);
             }
         }
@@ -485,7 +489,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Character> get(Configuration configuration, final Class<List<Character>> type, List<Character> def, String path) {
+            public List<Character> get(Configuration configuration, final Class<List<Character>> type, String path, List<Character> def) {
                 return configuration.getList(path) == null ? def : configuration.getCharList(path);
             }
         }
@@ -497,10 +501,35 @@ public @interface CfgField {
             }
 
             @Override
-            public List<String> get(Configuration configuration, final Class<List<String>> type, List<String> def, String path) {
+            public List<String> get(Configuration configuration, final Class<List<String>> type, String path, List<String> def) {
                 return configuration.getList(path) == null ? def : configuration.getStringList(path);
             }
         }
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Special
+        ///////////////////////////////////////////////////////////////////////////
+
+        private static class ConfigDataPattern extends ConfigData<Pattern> {
+            @Override
+            public Pattern get(final Configuration configuration, final Class<Pattern> type, final String path) {
+                return get(configuration, type, path, null);
+            }
+
+            @Override
+            public Pattern get(final Configuration configuration, final Class<Pattern> type, final String path, final Pattern def) {
+                return configuration.contains(path) ? Pattern.compile(configuration.getString(path)) : def;
+            }
+
+            @Override
+            public void set(final Configuration configuration, final String path, final Pattern value) {
+                configuration.set(path, value.pattern());
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Object
+        ///////////////////////////////////////////////////////////////////////////
 
         private static class ConfigDataObject extends ConfigData {
             @Override
@@ -509,7 +538,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Object get(Configuration configuration, Class type, Object def, String path) {
+            public Object get(Configuration configuration, Class type, String path, Object def) {
                 return configuration.get(path, def);
             }
         }

@@ -49,7 +49,7 @@ public interface YamlConfigData<T extends YamlConfigData<T, P>, P extends Plugin
 
                 val path = serializationOptions.getPath();
                 var configValue = serializationOptions.getType().getDataType()
-                        .get(configuration, field.getType(), null, path);
+                        .get(configuration, field.getType(), path, null);
 
                 if (configValue == null) try {
                     configValue = field.get(this);

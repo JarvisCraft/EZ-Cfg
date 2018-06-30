@@ -19,6 +19,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.bukkit.util.NumberConversions.*;
 
@@ -79,6 +80,8 @@ public @interface CfgField {
         OFFLINE_PLAYER(new ConfigDataOfflinePlayer(), OfflinePlayer.class),
         ITEM_STACK(new ConfigDataItemStack(), ItemStack.class),
         COLOR(new ConfigDataColor(), Color.class),
+        PATTERN(new ConfigDataPattern(), Pattern.class),
+        // Object
         OBJECT(new ConfigDataObject());
 
         private final ConfigData dataType;
@@ -149,7 +152,7 @@ public @interface CfgField {
                 return (T) configuration.get(path);
             }
 
-            public T get(final FileConfiguration configuration, final Class<T> type, final T def, final String path) {
+            public T get(final FileConfiguration configuration, final Class<T> type, final String path, final T def) {
                 val value = get(configuration, type, path);
                 return value == null ? def : value;
             }
@@ -172,7 +175,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Boolean get(final FileConfiguration configuration, final Class<Boolean> type, final Boolean def, final String path) {
+            public Boolean get(final FileConfiguration configuration, final Class<Boolean> type, final String path, final Boolean def) {
                 val value = configuration.get(path, def);
                 if (value instanceof Boolean) return (Boolean) value;
                 else return def;
@@ -197,7 +200,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Byte get(final FileConfiguration configuration, final Class<Byte> type, final Byte def, final String path) {
+            public Byte get(final FileConfiguration configuration, final Class<Byte> type, final String path, final Byte def) {
                 val value = configuration.get(path);
                 if (value instanceof Number) return (byte) toInt(value);
                 else return def;
@@ -221,7 +224,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Short get(final FileConfiguration configuration, final Class<Short> type, final Short def, final String path) {
+            public Short get(final FileConfiguration configuration, final Class<Short> type, final String path, final Short def) {
                 val value = configuration.get(path);
                 if (value instanceof Number) return (short) toInt(value);
                 else return def;
@@ -245,7 +248,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Integer get(final FileConfiguration configuration, final Class<Integer> type, final Integer def, final String path) {
+            public Integer get(final FileConfiguration configuration, final Class<Integer> type, final String path, final Integer def) {
                 val value = configuration.get(path);
                 if (value instanceof Number) return toInt(value);
                 else return def;
@@ -269,7 +272,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Long get(final FileConfiguration configuration, final Class<Long> type, final Long def, final String path) {
+            public Long get(final FileConfiguration configuration, final Class<Long> type, final String path, final Long def) {
                 val value = configuration.get(path, def);
                 if (value instanceof Number) return toLong(value);
                 else return def;
@@ -293,7 +296,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Float get(final FileConfiguration configuration, final Class<Float> type, final Float def, final String path) {
+            public Float get(final FileConfiguration configuration, final Class<Float> type, final String path, final Float def) {
                 val value = configuration.get(path);
                 if (value instanceof Number) return (float) toDouble(value);
                 else return def;
@@ -317,7 +320,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Double get(final FileConfiguration configuration, final Class<Double> type, final Double def, final String path) {
+            public Double get(final FileConfiguration configuration, final Class<Double> type, final String path, final Double def) {
                 val value = configuration.get(path);
                 if (value instanceof Number) return toDouble(value);
                 else return def;
@@ -341,7 +344,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Character get(final FileConfiguration configuration, final Class<Character> type, final Character def, final String path) {
+            public Character get(final FileConfiguration configuration, final Class<Character> type, final String path, final Character def) {
                 val value = configuration.getString(path);
                 return value == null || value.isEmpty() ? def : value.charAt(0);
             }
@@ -364,7 +367,7 @@ public @interface CfgField {
             }
 
             @Override
-            public String get(final FileConfiguration configuration, final Class<String> type, final String def, final String path) {
+            public String get(final FileConfiguration configuration, final Class<String> type, final String path, final String def) {
                 return configuration.getString(path, def);
             }
 
@@ -397,7 +400,7 @@ public @interface CfgField {
             }
 
             @Override
-            public E get(final FileConfiguration configuration, final Class<E> type, final E def, final String path) {
+            public E get(final FileConfiguration configuration, final Class<E> type, final String path, final E def) {
                 val value = get(configuration, type, path);
                 return value == null ? def : value;
             }
@@ -415,7 +418,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Map<?, ?> get(final FileConfiguration configuration, final Class<Map<?, ?>> type, final Map<?, ?> def, final String path) {
+            public Map<?, ?> get(final FileConfiguration configuration, final Class<Map<?, ?>> type, final String path, final Map<?, ?> def) {
                 val section = configuration.getConfigurationSection(path);
                 return section == null ? def : section.getValues(false);
             }
@@ -456,7 +459,7 @@ public @interface CfgField {
 
             @Override
             @SuppressWarnings("unchecked")
-            public List<Object> get(FileConfiguration configuration, final Class<List<Object>> type, List<Object> def, String path) {
+            public List<Object> get(FileConfiguration configuration, final Class<List<Object>> type, String path, List<Object> def) {
                 return configuration.getList(path) == null ? def : (List<Object>) configuration.getList(path);
             }
         }
@@ -468,7 +471,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Boolean> get(FileConfiguration configuration, final Class<List<Boolean>> type, List<Boolean> def, String path) {
+            public List<Boolean> get(FileConfiguration configuration, final Class<List<Boolean>> type, String path, List<Boolean> def) {
                 return configuration.getList(path) == null ? def : configuration.getBooleanList(path);
             }
         }
@@ -480,7 +483,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Byte> get(FileConfiguration configuration, final Class<List<Byte>> type, List<Byte> def, String path) {
+            public List<Byte> get(FileConfiguration configuration, final Class<List<Byte>> type, String path, List<Byte> def) {
                 return configuration.getList(path) == null ? def : configuration.getByteList(path);
             }
         }
@@ -492,7 +495,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Short> get(FileConfiguration configuration, final Class<List<Short>> type, List<Short> def, String path) {
+            public List<Short> get(FileConfiguration configuration, final Class<List<Short>> type, String path, List<Short> def) {
                 return configuration.getList(path) == null ? def : configuration.getShortList(path);
             }
         }
@@ -504,7 +507,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Integer> get(FileConfiguration configuration, final Class<List<Integer>> type, List<Integer> def, String path) {
+            public List<Integer> get(FileConfiguration configuration, final Class<List<Integer>> type, String path, List<Integer> def) {
                 return configuration.getList(path) == null ? def : configuration.getIntegerList(path);
             }
         }
@@ -516,7 +519,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Long> get(FileConfiguration configuration, final Class<List<Long>> type, List<Long> def, String path) {
+            public List<Long> get(FileConfiguration configuration, final Class<List<Long>> type, String path, List<Long> def) {
                 return configuration.getList(path) == null ? def : configuration.getLongList(path);
             }
         }
@@ -528,7 +531,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Float> get(FileConfiguration configuration, final Class<List<Float>> type, List<Float> def, String path) {
+            public List<Float> get(FileConfiguration configuration, final Class<List<Float>> type, String path, List<Float> def) {
                 return configuration.getList(path) == null ? def : configuration.getFloatList(path);
             }
         }
@@ -540,7 +543,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Double> get(FileConfiguration configuration, final Class<List<Double>> type, List<Double> def, String path) {
+            public List<Double> get(FileConfiguration configuration, final Class<List<Double>> type, String path, List<Double> def) {
                 return configuration.getList(path) == null ? def : configuration.getDoubleList(path);
             }
         }
@@ -552,7 +555,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Character> get(FileConfiguration configuration, final Class<List<Character>> type, List<Character> def, String path) {
+            public List<Character> get(FileConfiguration configuration, final Class<List<Character>> type, String path, List<Character> def) {
                 return configuration.getList(path) == null ? def : configuration.getCharacterList(path);
             }
         }
@@ -564,7 +567,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<String> get(FileConfiguration configuration, final Class<List<String>> type, List<String> def, String path) {
+            public List<String> get(FileConfiguration configuration, final Class<List<String>> type, String path, List<String> def) {
                 return configuration.getList(path) == null ? def : configuration.getStringList(path);
             }
         }
@@ -576,7 +579,7 @@ public @interface CfgField {
             }
 
             @Override
-            public List<Map<?, ?>> get(FileConfiguration configuration, final Class<List<Map<?, ?>>> type, List<Map<?, ?>> def, String path) {
+            public List<Map<?, ?>> get(FileConfiguration configuration, final Class<List<Map<?, ?>>> type, String path, List<Map<?, ?>> def) {
                 return configuration.getList(path) == null ? def : configuration.getMapList(path);
             }
         }
@@ -597,7 +600,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Vector get(final FileConfiguration configuration, final Class<Vector> type, final Vector def, final String path) {
+            public Vector get(final FileConfiguration configuration, final Class<Vector> type, final String path, final Vector def) {
                 return configuration.getVector(path, def);
             }
         }
@@ -614,7 +617,7 @@ public @interface CfgField {
             }
 
             @Override
-            public OfflinePlayer get(final FileConfiguration configuration, final Class<OfflinePlayer> type, final OfflinePlayer def, final String path) {
+            public OfflinePlayer get(final FileConfiguration configuration, final Class<OfflinePlayer> type, final String path, final OfflinePlayer def) {
                 return configuration.getOfflinePlayer(path, def);
             }
         }
@@ -626,7 +629,7 @@ public @interface CfgField {
             }
 
             @Override
-            public ItemStack get(final FileConfiguration configuration, final Class<ItemStack> type, final ItemStack def, final String path) {
+            public ItemStack get(final FileConfiguration configuration, final Class<ItemStack> type, final String path, final ItemStack def) {
                 return configuration.getItemStack(path, def);
             }
 
@@ -643,7 +646,7 @@ public @interface CfgField {
             }
 
             @Override
-            public Color get(final FileConfiguration configuration, final Class<Color> type, final Color def, final String path) {
+            public Color get(final FileConfiguration configuration, final Class<Color> type, final String path, final Color def) {
                 return configuration.getColor(path, def);
             }
 
@@ -652,6 +655,33 @@ public @interface CfgField {
                 return configuration.isColor(path);
             }
         }
+
+        private static class ConfigDataPattern extends ConfigData<Pattern> {
+
+            @Override
+            public Pattern get(final FileConfiguration configuration, final Class<Pattern> type, final String path) {
+                return get(configuration, type, path, null);
+            }
+
+            @Override
+            public Pattern get(final FileConfiguration configuration, final Class<Pattern> type, final String path, final Pattern def) {
+                return configuration.isString(path) ? Pattern.compile(configuration.getString(path)) : def;
+            }
+
+            @Override
+            public void set(final FileConfiguration configuration, final String path, final Pattern value) {
+                configuration.set(path, value.pattern());
+            }
+
+            @Override
+            public boolean isValid(final FileConfiguration configuration, final String path) {
+                return configuration.isString(path);
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Object
+        ///////////////////////////////////////////////////////////////////////////
 
         private static class ConfigDataObject extends ConfigData {
             @Override
