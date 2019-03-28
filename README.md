@@ -16,10 +16,12 @@ public class MySetting implements YamlConfigData<MySetting, MyPlugin> {
     @CfgField("holograms.IDs") private List<Integer> hologramsIds = Collections.emptyList();
 }
 ```
-Then load the values using
+Then load the values using any available method
 ```Java
 MySetting setting = new MySetting().load();
+// OR
 MySetting setting = new MySetting().load(new File("path/to/File.yml"));
+// OR
 MySetting setting = new MySetting().load("path/to/File.yml");
 ```
 ## Maven:
